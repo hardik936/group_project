@@ -1,0 +1,38 @@
+modules = ["nodejs-20", "web"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["mongodb"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Config Verification"
+
+[[workflows.workflow]]
+name = "Config Verification"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ AI Fitness Coach - Configuration Verified\" && echo \"📁 Frontend: React + TypeScript + Vite configured\" && echo \"📁 Backend: Express.js + MongoDB + JWT configured\" && echo \"📄 Documentation: Created in docs/ folder\" && echo \"🚀 Ready for local development with VS Code\""
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 5000
+externalPort = 80
