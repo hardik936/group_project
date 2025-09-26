@@ -2,13 +2,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-// MOCK API - In a real app, this would be in a service file e.g., services/authService.ts
-import { MOCK_API_login } from '../services/mockApi';
+// Real API
+import { API_login } from '../services/api';
 
 const LoginPage: React.FC = () => {
-  // Pre-fill with hardcoded credentials for easy login
-  const [email, setEmail] = useState('user@example.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,8 +18,8 @@ const LoginPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      // Use hardcoded credentials for the mock login, ignoring form state
-      const { user, token } = await MOCK_API_login('user@example.com', 'password');
+      // Use actual form values for login
+      const { user, token } = await API_login(email, password);
       login(user, token);
       navigate('/dashboard');
     } catch (err: any) {

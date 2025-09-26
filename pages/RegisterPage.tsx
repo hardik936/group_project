@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-// MOCK API
-import { MOCK_API_register } from '../services/mockApi';
+// Real API
+import { API_register } from '../services/api';
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -19,8 +19,7 @@ const RegisterPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      // Replace with actual API call
-      const { user, token } = await MOCK_API_register(username, email, password);
+      const { user, token } = await API_register(username, email, password);
       login(user, token);
       navigate('/dashboard');
     } catch (err: any) {

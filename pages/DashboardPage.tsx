@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Workout, AIWorkoutPlan } from '../types';
-import { MOCK_API_getWorkouts, MOCK_API_getAIRecommendation } from '../services/mockApi';
+import { API_getWorkouts, API_getAIRecommendation } from '../services/api';
 
 const PlusIcon: React.FC<{className: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -29,7 +29,7 @@ const DashboardPage: React.FC = () => {
         if (!token) return;
         setLoading(prev => ({ ...prev, workouts: true }));
         try {
-            const data = await MOCK_API_getWorkouts(token);
+            const data = await API_getWorkouts(token);
             setWorkouts(data);
         } catch (err: any) {
             setError(prev => ({ ...prev, workouts: 'Failed to fetch workouts.' }));
@@ -43,7 +43,7 @@ const DashboardPage: React.FC = () => {
         setLoading(prev => ({ ...prev, ai: true }));
         setError(prev => ({...prev, ai: ''}));
         try {
-            const data = await MOCK_API_getAIRecommendation(token, forceRefresh);
+            const data = await API_getAIRecommendation(token, forceRefresh);
             setAiPlan(data);
         } catch (err: any) {
             setError(prev => ({ ...prev, ai: err.message || 'Failed to generate AI plan.' }));

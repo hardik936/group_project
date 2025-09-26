@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { MOCK_API_addWorkout } from '../services/mockApi';
+import { API_addWorkout } from '../services/api';
 
 const AddWorkoutPage: React.FC = () => {
   const [exerciseName, setExerciseName] = useState('');
@@ -34,7 +34,7 @@ const AddWorkoutPage: React.FC = () => {
     };
 
     try {
-      await MOCK_API_addWorkout(token, workoutData);
+      await API_addWorkout(token, workoutData);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to save workout. Please try again.');
