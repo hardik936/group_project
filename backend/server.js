@@ -245,11 +245,14 @@ app.get('/api/ai-recommendation', authenticateToken, async (req, res) => {
             return res.status(500).json({ error: "AI Coach is not configured. The API key is missing." });
         }
 
-        const genAI = new GoogleGenAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const ai = new GoogleGenAI({ apiKey });
+        
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
 
-        const response = await model.generateContent(prompt);
-        const responseText = response.response.text();
+        const responseText = response.text;
 
         // Try to extract JSON from the response
         let jsonText = responseText.trim();
