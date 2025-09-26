@@ -1,0 +1,108 @@
+
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+// MOCK API
+import { MOCK_API_register } from '../services/mockApi';
+
+const RegisterPage: React.FC = () => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      // Replace with actual API call
+      const { user, token } = await MOCK_API_register(username, email, password);
+      login(user, token);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Failed to register. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-dark-800 rounded-lg shadow-2xl p-8">
+          <h2 className="text-3xl font-bold text-center text-dark-100 mb-2">Create Your Account</h2>
+          <p className="text-center text-dark-200 mb-8">Start tracking your progress today.</p>
+
+          {error && <div className="bg-red-500/20 text-red-300 p-3 rounded-md mb-6 text-center">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-dark-200 text-sm font-bold mb-2" htmlFor="username">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="w-full px-3 py-2 bg-dark-700 border border-dark-700 rounded-md text-dark-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="your_username"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-dark-200 text-sm font-bold mb-2" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 bg-dark-700 border border-dark-700 rounded-md text-dark-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-dark-200 text-sm font-bold mb-2" htmlFor="password">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-3 py-2 bg-dark-700 border border-dark-700 rounded-md text-dark-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="••••••••"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-dark-900 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition-colors disabled:bg-gray-500"
+              >
+                {loading ? 'Creating Account...' : 'Sign Up'}
+              </button>
+            </div>
+          </form>
+
+          <p className="text-center text-dark-200 mt-8">
+            Already have an account?{' '}
+            <Link to="/login" className="font-bold text-primary hover:text-primary-dark">
+              Sign In
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RegisterPage;
