@@ -297,21 +297,25 @@ app.get('/api/ai-recommendation', authenticateToken, async (req, res) => {
     }
 });
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
-// Serve frontend
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
-app.get("/", (req, res) => {
+// Catch-all handler: send back React's index.html file for client-side routing
+// Express 5 requires named wildcard parameters instead of '*'
+app.get('/*splat', (req, res, next) => {
+  // Don't catch API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📁 Serving frontend from: ${path.join(__dirname, "../frontend/dist")}`);
 });

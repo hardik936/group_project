@@ -1,9 +1,10 @@
 import { User, Workout, AIWorkoutPlan } from '../types';
 
-// CORRECTED: Read the base URL directly from Vite's environment variables.
-// This will be replaced with your production URL during the Render build.
-// The '||' provides a fallback for local development.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+// API Base URL configuration for development vs production
+// In production (Render), frontend and backend are served from same domain
+// In development, backend runs on localhost:3001
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.PROD ? '' : 'http://localhost:3001');
 
 // API Functions
 

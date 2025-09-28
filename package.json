@@ -1,0 +1,23 @@
+{
+  "name": "ai-fitness-coach-app",
+  "version": "1.0.0",
+  "description": "AI Fitness Coach - Full Stack Application",
+  "main": "backend/server.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "build": "npm install --prefix frontend && npm run build --prefix frontend && npm install --prefix backend",
+    "start": "node backend/server.js",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install-deps": "npm install --prefix frontend && npm install --prefix backend",
+    "heroku-postbuild": "npm run build"
+  },
+  "dependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "keywords": ["fitness", "ai", "workout", "tracker"],
+  "author": "AI Fitness Coach Team",
+  "license": "MIT"
+}
