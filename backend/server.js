@@ -1,6 +1,6 @@
 require('dotenv').config();
-import path from "path";
-import { fileURLToPath } from "url";
+const path = require('path');
+const { fileURLToPath } = require('url');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
