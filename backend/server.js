@@ -12,19 +12,16 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection with proper options for Atlas
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-fitness-coach';
-mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: 30000,
-    socketTimeoutMS: 0,
-    family: 4
-});
 
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', () => {
-    console.log('Connected to MongoDB');
-});
+const MONGODB_URI = process.env.MONGODB_URI;
+console.log("Connecting to:", MONGODB_URI);
+
+mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 10000,
+})
+.then(() => console.log("✅ Connected to MongoDB Atlas"))
+.catch(err => console.error("❌ MongoDB connection error:", err));
+
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -213,11 +210,13 @@ app.post('/api/workouts', authenticateToken, async (req, res) => {
     }
 });
 
-// AI Recommendation route (using the correct @google/generative-ai package)
+// NEW AI RECOMMENDATION ROUTE POWERED BY GROQ
 app.get('/api/ai-recommendation', authenticateToken, async (req, res) => {
+    console.log("--- Groq AI Recommendation Request Received ---");
     try {
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = process.env.GROQ_API_KEY;
         if (!apiKey) {
+            console.error("CRITICAL: GROQ_API_KEY is not loaded from .env file!");
             return res.status(500).json({ error: "AI Coach is not configured. The API key is missing." });
         }
 
@@ -243,44 +242,52 @@ app.get('/api/ai-recommendation', authenticateToken, async (req, res) => {
             4. Provide a reasonable number of sets and a rep range (e.g., "8-12 reps").
             5. Ensure the plan is balanced and targets major muscle groups over the 3 days.
 
-            Return ONLY the JSON object for the plan. The root of the object must be a "plan" key containing an array of day objects.
+            Return ONLY the raw JSON object for the plan. Do not include markdown, introductory text, or any other explanations. Your entire response must be a single, valid JSON object starting with { and ending with }.
             Example format: { "plan": [ { "day": 1, "focus": "...", "exercises": [...] } ] }
         `;
 
-        // Correctly import and initialize the modern SDK
-        const { GoogleGenerativeAI } = require('@google/generative-ai');
-        const genAI = new GoogleGenerativeAI(apiKey);
-        // The corrected line:
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // 1. Import and initialize the Groq client
+        const Groq = require('groq-sdk');
+        const groq = new Groq({ apiKey });
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const responseText = response.text();
+        console.log("Attempting to use Groq AI model: llama-3.1-8b-instant");
 
-        console.log('Raw AI Response Text:', responseText); // For debugging
+        // 2. Call the Groq API
+        const chatCompletion = await groq.chat.completions.create({
+            model: "llama-3.1-8b-instant",   // ✅ free + active model
+            response_format: { type: "json_object" }, // ✅ ensures valid JSON
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a helpful AI fitness coach. Always return responses as valid JSON only."
+                },
+                {
+                    role: "user",
+                    content: prompt,
+                }
+            ],
+        });
 
-        let jsonText = responseText.trim();
-        
-        // Clean the response to ensure it's valid JSON
-        if (jsonText.startsWith('```json')) {
-            jsonText = jsonText.slice(7, -3).trim();
-        } else if (jsonText.startsWith('```')) {
-            jsonText = jsonText.slice(3, -3).trim();
-        }
+        // 3. Extract AI response
+        const responseText = chatCompletion.choices[0]?.message?.content || "";
+        console.log("Raw AI Response:", responseText);
 
+        // 4. Parse safely
         let parsedPlan;
         try {
-            parsedPlan = JSON.parse(jsonText);
+            parsedPlan = JSON.parse(responseText);
         } catch (parseError) {
-            console.error('Failed to parse AI response as JSON:', parseError);
-            return res.status(500).json({ error: "The AI coach returned an invalid response format. Please try again." });
+            console.error("Failed to parse AI response:", parseError);
+            return res.status(500).json({ error: "AI response was not valid JSON. Please try again." });
         }
-        
+
+        // 5. Validate structure
         if (!parsedPlan.plan || !Array.isArray(parsedPlan.plan)) {
-            console.error("Parsed JSON is missing the 'plan' array:", parsedPlan);
+            console.error("Parsed JSON missing 'plan':", parsedPlan);
             return res.status(500).json({ error: "The AI coach generated a plan in an unexpected format. Please try again." });
         }
-        
+
+        // 6. Success
         res.json(parsedPlan);
 
     } catch (error) {
