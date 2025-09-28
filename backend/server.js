@@ -1,11 +1,10 @@
 require('dotenv').config();
-const path = require('path');
-const { fileURLToPath } = require('url');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -309,7 +308,7 @@ app.listen(PORT, () => {
 
 // Serve frontend
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
 
