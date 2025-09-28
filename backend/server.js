@@ -12,9 +12,16 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
+// MongoDB connection with SSL options for Atlas
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-fitness-coach';
-mongoose.connect(MONGODB_URI);
+mongoose.connect(MONGODB_URI, {
+    ssl: true,
+    sslValidate: false,
+    serverSelectionTimeoutMS: 30000,
+    socketTimeoutMS: 0,
+    keepAlive: true,
+    keepAliveInitialDelay: 300000
+});
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
