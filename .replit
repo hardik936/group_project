@@ -42,13 +42,13 @@ outputType = "console"
 name = "Frontend"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run dev"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Backend"
@@ -65,3 +65,7 @@ outputType = "console"
 [[ports]]
 localPort = 3001
 externalPort = 3001
+
+[[ports]]
+localPort = 34361
+externalPort = 80
