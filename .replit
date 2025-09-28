@@ -65,7 +65,3 @@ outputType = "console"
 [[ports]]
 localPort = 3001
 externalPort = 3001
-
-[[ports]]
-localPort = 40923
-externalPort = 80
