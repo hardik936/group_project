@@ -1,4 +1,6 @@
 require('dotenv').config();
+import path from "path";
+import { fileURLToPath } from "url";
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -305,16 +307,12 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Serve frontend build
+// Serve frontend
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-// Catch-all route for React/Vite
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
