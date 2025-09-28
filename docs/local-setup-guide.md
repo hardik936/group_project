@@ -125,6 +125,7 @@ You should see: `Server running on port 3001` and `Connected to MongoDB`
 
 3. **Terminal 2 - Frontend Development Server:**
 ```bash
+cd frontend
 npm run dev
 ```
 You should see: `Local: http://localhost:5000/`
@@ -142,7 +143,7 @@ npm run dev
 
 2. **Start Frontend (Command Prompt 2):**
 ```cmd
-cd /path/to/your/project
+cd /path/to/your/project/frontend
 npm run dev
 ```
 
@@ -307,20 +308,38 @@ npm run preview
 ## File Structure
 ```
 ai-fitness-coach/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Layout.tsx
+│   │   │   └── Navbar.tsx
+│   │   ├── hooks/
+│   │   │   └── useAuth.tsx
+│   │   ├── pages/
+│   │   │   ├── AddWorkoutPage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── LandingPage.tsx
+│   │   │   ├── LoginPage.tsx
+│   │   │   └── RegisterPage.tsx
+│   │   ├── services/
+│   │   │   ├── api.ts
+│   │   │   └── mockApi.ts
+│   │   ├── types/
+│   │   │   └── index.ts
+│   │   ├── App.tsx
+│   │   └── index.tsx
+│   ├── index.html
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
 ├── backend/
 │   ├── package.json
 │   ├── server.js
 │   └── .env
-├── docs/
-│   ├── database-models.md
-│   └── local-setup-guide.md
-├── pages/
-├── services/
-├── components/
-├── hooks/
-├── package.json
-├── vite.config.ts
-└── .env
+└── docs/
+    ├── api-testing-guide.md
+    ├── database-models.md
+    └── local-setup-guide.md
 ```
 
 ## Support

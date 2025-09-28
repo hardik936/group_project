@@ -251,7 +251,7 @@ app.get('/api/ai-recommendation', authenticateToken, async (req, res) => {
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(apiKey);
         // The corrected line:
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const result = await model.generateContent(prompt);
         const response = await result.response;

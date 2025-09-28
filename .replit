@@ -66,10 +66,6 @@ outputType = "console"
 localPort = 3001
 externalPort = 3001
 
-[[ports]]
-localPort = 34361
-externalPort = 80
-
 [deployment]
 deploymentTarget = "autoscale"
 run = ["cd frontend", "npm run preview"]
