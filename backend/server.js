@@ -209,9 +209,14 @@ app.post('/api/workouts', authenticateToken, async (req, res) => {
     }
 });
 
-// AI Recommendation route (keeping existing Google Gemini integration)
+// AI Recommendation route (using the correct @google/generative-ai package)
 app.get('/api/ai-recommendation', authenticateToken, async (req, res) => {
     try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({ error: "AI Coach is not configured. The API key is missing." });
+        }
+
         // Get user's recent workouts
         const recentWorkouts = await Workout.find({ user: req.user.userId })
             .sort({ createdAt: -1 })
@@ -234,91 +239,49 @@ app.get('/api/ai-recommendation', authenticateToken, async (req, res) => {
             4. Provide a reasonable number of sets and a rep range (e.g., "8-12 reps").
             5. Ensure the plan is balanced and targets major muscle groups over the 3 days.
 
-            Return ONLY the JSON object for the plan.
+            Return ONLY the JSON object for the plan. The root of the object must be a "plan" key containing an array of day objects.
+            Example format: { "plan": [ { "day": 1, "focus": "...", "exercises": [...] } ] }
         `;
 
-        // Import Google Gemini dynamically
-        const { GoogleGenAI } = await import('@google/genai');
-        const apiKey = process.env.GEMINI_API_KEY;
+        // Correctly import and initialize the modern SDK
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(apiKey);
+        // The corrected line:
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
-        if (!apiKey) {
-            return res.status(500).json({ error: "AI Coach is not configured. The API key is missing." });
-        }
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const responseText = response.text();
 
-        const ai = new GoogleGenAI({ apiKey });
-        
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-        });
+        console.log('Raw AI Response Text:', responseText); // For debugging
 
-        const responseText = response.text;
-
-        // Try to extract JSON from the response
         let jsonText = responseText.trim();
         
-        // Remove any markdown code blocks if present
+        // Clean the response to ensure it's valid JSON
         if (jsonText.startsWith('```json')) {
-            jsonText = jsonText.replace(/```json\n?/, '').replace(/\n?```$/, '');
+            jsonText = jsonText.slice(7, -3).trim();
         } else if (jsonText.startsWith('```')) {
-            jsonText = jsonText.replace(/```\n?/, '').replace(/\n?```$/, '');
+            jsonText = jsonText.slice(3, -3).trim();
         }
 
         let parsedPlan;
         try {
             parsedPlan = JSON.parse(jsonText);
         } catch (parseError) {
-            // If JSON parsing fails, create a fallback response
-            console.log('Failed to parse AI response as JSON, creating fallback plan');
-            parsedPlan = {
-                plan: [
-                    {
-                        day: 1,
-                        focus: "Push Day",
-                        exercises: [
-                            { name: "Bench Press", sets: 4, reps: "8-10" },
-                            { name: "Overhead Press", sets: 3, reps: "8-12" },
-                            { name: "Push-ups", sets: 3, reps: "10-15" },
-                            { name: "Tricep Dips", sets: 3, reps: "8-12" }
-                        ]
-                    },
-                    {
-                        day: 2,
-                        focus: "Pull Day",
-                        exercises: [
-                            { name: "Pull-ups", sets: 4, reps: "6-10" },
-                            { name: "Bent-over Row", sets: 4, reps: "8-10" },
-                            { name: "Lat Pulldown", sets: 3, reps: "10-12" },
-                            { name: "Bicep Curls", sets: 3, reps: "10-15" }
-                        ]
-                    },
-                    {
-                        day: 3,
-                        focus: "Leg Day",
-                        exercises: [
-                            { name: "Squats", sets: 4, reps: "8-12" },
-                            { name: "Deadlifts", sets: 3, reps: "6-8" },
-                            { name: "Lunges", sets: 3, reps: "10-12" },
-                            { name: "Calf Raises", sets: 4, reps: "15-20" }
-                        ]
-                    }
-                ]
-            };
+            console.error('Failed to parse AI response as JSON:', parseError);
+            return res.status(500).json({ error: "The AI coach returned an invalid response format. Please try again." });
         }
         
         if (!parsedPlan.plan || !Array.isArray(parsedPlan.plan)) {
-            throw new Error("AI response is missing the 'plan' array.");
+            console.error("Parsed JSON is missing the 'plan' array:", parsedPlan);
+            return res.status(500).json({ error: "The AI coach generated a plan in an unexpected format. Please try again." });
         }
         
         res.json(parsedPlan);
 
     } catch (error) {
-        console.error("Error generating AI workout plan:", error);
-        if (error.message.includes("API key is missing")) {
-            res.status(500).json({ error: error.message });
-        } else {
-            res.status(500).json({ error: "The AI coach could not generate a plan. Please try again later." });
-        }
+        console.error("Error in /api/ai-recommendation:", error);
+        res.status(500).json({ error: "The AI coach could not generate a plan. Please try again later." });
     }
 });
 
